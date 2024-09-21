@@ -314,6 +314,7 @@ static json oaicompat_completion_params_parse(
     json llama_params;
 
     llama_params["__oaicompat"] = true;
+    llama_params["cache_prompt"] = true;
 
     // Apply chat template to the list of messages
     llama_params["prompt"] = format_chat(model, chat_template, body.at("messages"));
