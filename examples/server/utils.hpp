@@ -438,6 +438,8 @@ static std::vector<json> format_partial_response_oaicompat(const json & result, 
     bool stopped_limit  = json_value(result, "stopped_limit", false);
     std::string content = json_value(result, "content",       std::string(""));
 
+    std::string stopping_word = json_value(result, "stopping_word", std::string(""));
+
     std::string finish_reason;
     if (stopped_word || stopped_eos) {
         finish_reason = "stop";
@@ -445,6 +447,8 @@ static std::vector<json> format_partial_response_oaicompat(const json & result, 
     if (stopped_limit) {
         finish_reason = "length";
     }
+
+    std::string system_fingerprint = stopped_word ? "stopping_word " + stopping_word : "";
 
     std::time_t t = std::time(0);
 
@@ -471,7 +475,8 @@ static std::vector<json> format_partial_response_oaicompat(const json & result, 
                             {"created", t},
                             {"id", completion_id},
                             {"model", modelname},
-                            {"object", "chat.completion.chunk"}};
+                            {"object", "chat.completion.chunk"},
+                            {"system_fingerprint", system_fingerprint}};
 
                 json second_ret = json{
                             {"choices", json::array({json{{"finish_reason", nullptr},
@@ -482,7 +487,8 @@ static std::vector<json> format_partial_response_oaicompat(const json & result, 
                             {"created", t},
                             {"id", completion_id},
                             {"model", modelname},
-                            {"object", "chat.completion.chunk"}};
+                            {"object", "chat.completion.chunk"},
+                            {"system_fingerprint", system_fingerprint}};
 
                 return std::vector<json>({initial_ret, second_ret});
             }
@@ -509,7 +515,8 @@ static std::vector<json> format_partial_response_oaicompat(const json & result, 
         {"created", t},
         {"id",      completion_id},
         {"model",   modelname},
-        {"object",  "chat.completion.chunk"}
+        {"object",  "chat.completion.chunk"},
+        {"system_fingerprint", system_fingerprint}
     };
     if (!finish_reason.empty()) {
         int num_tokens_predicted = json_value(result, "tokens_predicted", 0);
